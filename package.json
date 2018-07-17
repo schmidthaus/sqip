@@ -18,7 +18,10 @@
     "precommit": "npm run lint",
     "prepush": "npm run test"
   },
-  "files": ["src", "vendor"],
+  "files": [
+    "src",
+    "vendor"
+  ],
   "keywords": [
     "lqip",
     "svg",
@@ -67,6 +70,8 @@
     "prettier": "^1.11.1"
   },
   "jest": {
-    "collectCoverageFrom": ["src/**/*.js"]
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ]
   }
 }

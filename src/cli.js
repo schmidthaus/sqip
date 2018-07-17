@@ -2,7 +2,7 @@
 
 const yargs = require('yargs')
 
-const sqip = require('./index.js')
+const sqip = require('./sqip.js')
 
 const { argv } = yargs
   .usage('\nUsage: sqip --input [path]')

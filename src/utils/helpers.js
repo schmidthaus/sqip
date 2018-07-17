@@ -1,3 +1,4 @@
+const cheerio = require('cheerio')
 const sizeOf = require('image-size')
 
 // In case the user the did not provide the --output switch and is thus opting for the default stdout output inside an <img>, prepare the base64 encoded version of the SVG
@@ -13,8 +14,16 @@ const printFinalResult = ({ width, height }, filename, svgBase64Encoded) => {
   console.log(result)
 }
 
+const loadSVG = svg => {
+  return cheerio.load(svg, {
+    normalizeWhitespace: true,
+    xmlMode: true
+  })
+}
+
 module.exports = {
   encodeBase64,
   getDimensions,
-  printFinalResult
+  printFinalResult,
+  loadSVG
 }

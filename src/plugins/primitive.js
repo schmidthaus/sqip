@@ -1,0 +1,71 @@
+const childProcess = require('child_process')
+const fs = require('fs')
+const path = require('path')
+const os = require('os')
+
+const VENDOR_DIR = path.resolve(__dirname, '..', '..', 'vendor')
+const PRIMITIVE_TEMP_FILE = os.tmpdir() + '/primitive_tempfile.svg'
+let primitiveExecutable = 'primitive'
+
+// Since Primitive is only interested in the larger dimension of the input image, let's find it
+const findLargerImageDimension = ({ width, height }) =>
+  width > height ? width : height
+
+class PrimitivePlugin {
+  constructor(options) {
+    this.options = options || { shouldThrow: false }
+  }
+
+  apply(filename) {
+    this.checkForPrimitive()
+
+    const { numberOfPrimitives = 8, mode = 0, dimensions } = this.options
+
+    childProcess.execFileSync(primitiveExecutable, [
+      '-i',
+      filename,
+      '-o',
+      PRIMITIVE_TEMP_FILE,
+      '-n',
+      numberOfPrimitives,
+      '-m',
+      mode,
+      '-s',
+      findLargerImageDimension(dimensions)
+    ])
+    return fs.readFileSync(PRIMITIVE_TEMP_FILE, {
+      encoding: 'utf-8'
+    })
+  }
+
+  // Sanity check: use the exit state of 'type' to check for Primitive availability
+  checkForPrimitive() {
+    const primitivePath = path.join(
+      VENDOR_DIR,
+      `primitive-${os.platform()}-${os.arch()}`
+    )
+
+    if (fs.existsSync(primitivePath)) {
+      primitiveExecutable = primitivePath
+      return
+    }
+
+    const errorMessage =
+      'Please ensure that Primitive (https://github.com/fogleman/primitive, written in Golang) is installed and globally available'
+    try {
+      if (os.platform() === 'win32') {
+        childProcess.execSync('where primitive')
+      } else {
+        childProcess.execSync('type primitive')
+      }
+    } catch (e) {
+      if (this.options.shouldThrow) {
+        throw new Error(errorMessage)
+      }
+      console.log(errorMessage)
+      process.exit(1)
+    }
+  }
+}
+
+module.exports = PrimitivePlugin
